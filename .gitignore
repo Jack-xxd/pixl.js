@@ -5,3 +5,8 @@ fw/src/amiibo_private.c
 
 fp-info-cache
 pixl.js-backups
+
+# venv stuff
+Lib
+Scripts
+pyvenv.cfg
