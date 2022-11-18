@@ -1,3 +1,6 @@
 [submodule "fw/components/littlefs"]
 	path = fw/components/littlefs
 	url = https://github.com/littlefs-project/littlefs.git
+[submodule "fw/components/micro-ecc"]
+	path = fw/components/micro-ecc
+	url = https://github.com/kmackay/micro-ecc
