@@ -1,11 +1,11 @@
 PROJECT_NAME     := secure_bootloader_ble_s132_pca10040
-TARGETS          := nrf52832_xxaa_s132
-OUTPUT_DIRECTORY := _build
+TARGETS          := bootloader
+OUTPUT_DIRECTORY := ../_build
 
-SDK_ROOT := ../../../../..
-PROJ_DIR := ../..
+SDK_ROOT := D:/dev/SDKs/nRF5_SDK_17.0.2_d674dde
+PROJ_DIR := ./
 
-$(OUTPUT_DIRECTORY)/nrf52832_xxaa_s132.out: \
+$(OUTPUT_DIRECTORY)/bootloader.out: \
   LINKER_SCRIPT  := secure_bootloader_gcc_nrf52.ld
 
 # Source files common to all targets
@@ -45,7 +45,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/crypto/nrf_crypto_hash.c \
   $(SDK_ROOT)/components/libraries/crypto/nrf_crypto_init.c \
   $(SDK_ROOT)/components/libraries/crypto/nrf_crypto_shared.c \
-  $(PROJ_DIR)/../dfu_public_key.c \
+  $(PROJ_DIR)/dfu_public_key.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/components/ble/common/ble_srv_common.c \
   $(SDK_ROOT)/components/libraries/bootloader/nrf_bootloader.c \
@@ -212,7 +212,7 @@ LDFLAGS += -Wl,--gc-sections
 LDFLAGS += --specs=nano.specs
 
 nrf52832_xxaa_s132: CFLAGS += -D__HEAP_SIZE=0
-nrf52832_xxaa_s132: ASMFLAGS += -D__HEAP_SIZE=0
+bootloader: ASMFLAGS += -D__HEAP_SIZE=0
 
 # Add standard libraries at the very end of the linker input, after all objects
 # that may need symbols provided by these libraries.
@@ -222,14 +222,12 @@ LIB_FILES += -lc -lnosys -lm
 .PHONY: default help
 
 # Default target - first one defined
-default: nrf52832_xxaa_s132
+default: bootloader
 
 # Print all targets that can be built
 help:
 	@echo following targets are available:
-	@echo		nrf52832_xxaa_s132
-	@echo		flash_softdevice
-	@echo		sdk_config - starting external tool for editing sdk_config.h
+	@echo		bootloader
 	@echo		flash      - flashing binary
 
 TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
@@ -239,24 +237,10 @@ include $(TEMPLATE_PATH)/Makefile.common
 
 $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
-.PHONY: flash flash_softdevice erase
+.PHONY: flash
 
 # Flash the program
 flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa_s132.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa_s132.hex --sectorerase
+	@echo Flashing: $(OUTPUT_DIRECTORY)/bootloader.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/bootloader.hex --sectorerase
 	nrfjprog -f nrf52 --reset
-
-# Flash softdevice
-flash_softdevice:
-	@echo Flashing: s132_nrf52_7.2.0_softdevice.hex
-	nrfjprog -f nrf52 --program $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_7.2.0_softdevice.hex --sectorerase
-	nrfjprog -f nrf52 --reset
-
-erase:
-	nrfjprog -f nrf52 --eraseall
-
-SDK_CONFIG_FILE := ../config/sdk_config.h
-CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
-sdk_config:
-	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
